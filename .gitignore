@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+.venv
+__pycache__/
+*.pyc
+
+# env (keep examples)
+.env
+.env.*
+!.env.example
