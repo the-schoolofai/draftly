@@ -2,7 +2,11 @@
 
 An AI email draft agent. Type a short idea (e.g. *"ask my manager for Friday off"*) and Draftly writes a complete email with a subject line, greeting, body, and sign-off, matching the tone to the request. Missing details become placeholders like `[Name]`.
 
-Under the hood it's a LangChain agent (`create_agent`) running `gemma4:31b-cloud` through Ollama, with a `get_today_date` tool it can call when the email needs the current date.
+Under the hood it's a LangChain agent (`create_agent`) that runs on a cloud LLM set in `.env` (default `google_genai:gemini-3.5-flash-lite`). It has:
+
+- a `get_today_date` tool it calls when the email needs the current date
+- PostgreSQL memory per conversation (`PostgresSaver` + `thread_id`)
+- `SummarizationMiddleware` to summarize long conversations
 
 | Folder | Stack |
 |---|---|
@@ -12,15 +16,23 @@ Under the hood it's a LangChain agent (`create_agent`) running `gemma4:31b-cloud
 
 ## Quick start
 
-```bash
-# API
-cd api && uv sync
-uv run app/main.py
+Requires Python 3.13+, [uv](https://docs.astral.sh/uv/), Node.js, a model API key and a local PostgreSQL.
 
-# Web
-cd web && npm install
-npm run dev
+```bash
+# API (terminal 1)
+cd api
+uv sync
+cp .env.example .env              # add your model, API key, DB URI
+uv run app/agent.py               # agent as a CLI chat
+uv run fastapi dev app/main.py    # API server → http://127.0.0.1:8000/docs
+
+# Web (terminal 2)
+cd web
+npm install
+npm run dev                       # → http://localhost:3000
 ```
+
+See [`api/README.md`](api/README.md) for the full API setup.
 
 ## Playground
 
