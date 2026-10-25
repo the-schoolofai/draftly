@@ -8,6 +8,7 @@ Under the hood it's a LangChain agent (`create_agent`) running `gemma4:31b-cloud
 |---|---|
 | `api/` | Python, FastAPI, LangChain agent |
 | `web/` | Next.js |
+| `playground/` | Standalone LangChain scripts that build the Draftly agent step by step |
 
 ## Quick start
 
@@ -20,3 +21,29 @@ uv run app/main.py
 cd web && npm install
 npm run dev
 ```
+
+## Playground
+
+`playground/` is where the Draftly agent is built up one concept at a time. Each script runs on its own:
+
+| Step | Concept |
+|---|---|
+| `agent_00.py` | Plain LLM call (`init_chat_model`) |
+| `agent_01.py` | First agent: `create_agent` + Draftly system prompt |
+| `agent_02.py` | Cloud model and API key from `.env` |
+| `agent_03.py` | Chat loop with manual memory |
+| `agent_04.py` | Checkpointer memory (`InMemorySaver` + `thread_id`) |
+| `agent_05.py` | Persistent memory (`SqliteSaver`) |
+| `agent_06.py` | Production memory (`PostgresSaver`) |
+| `agent_07.py` | Middleware (`SummarizationMiddleware`) |
+| `agent.py` | Draftly baseline: every step combined + `get_today_date` tool |
+
+```bash
+cd playground
+uv venv .play && source .play/bin/activate
+uv sync --active
+cp .env.example .env          # add your model, API key, DB URI
+uv run --active agent.py
+```
+
+See [`playground/README.md`](playground/README.md) for the full learning path, setup (Ollama, `.env`, Postgres) and run order.
