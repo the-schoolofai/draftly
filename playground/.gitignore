@@ -1,0 +1,19 @@
+# Virtual envs (.play is the playground env; .venv if uv runs without --active)
+.play/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Secrets (keep examples)
+.env
+.env.*
+!.env.example
+
+# Local agent memory (agent_05.py SqliteSaver)
+memory.db
+memory.db-*
+
+# OS / editor
+.DS_Store
