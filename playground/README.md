@@ -19,9 +19,9 @@ Each file runs on its own. Read and run them **in order**: every step keeps what
 | 05 | `agent_05.py` | **Persistent memory** | `SqliteSaver` writes to `memory.db` | SQLite file | `.env` |
 | 06 | `agent_06.py` | **Production memory** | `PostgresSaver` + `checkpointer.setup()` | PostgreSQL | `.env` + Postgres |
 | 07 | `agent_07.py` | **Middleware** | `SummarizationMiddleware` shrinks long history | PostgreSQL + summary | `.env` + Postgres |
-| ★ | `agent.py` | **Draftly baseline (all concepts)** | Steps 02 → 07 combined + `get_today_date` tool the agent decides when to call | PostgreSQL + summary | `.env` + Postgres |
+| ★ | `main.py` + `app/` | **Draftly app (all concepts)** | Steps 02 → 07 split into modules + `get_today_date` tool + structured `Draft` output | PostgreSQL + summary | `.env` + Postgres |
 
-`agent.py` puts every concept together: cloud LLM from `.env`, system prompt, tool, chat loop, `thread_id`, Postgres checkpointer and summarization middleware. Its summary trigger is a realistic 4000 tokens, keeping the last 10 messages. Step 07 uses 100 tokens so you can watch it fire.
+`main.py` + `app/` put every concept together: cloud LLM from `.env`, system prompt, tool, chat loop, `thread_id`, Postgres checkpointer, structured output (`Draft`: subject, body, tone) and middleware (summarization + tool retry). Its summary trigger is a realistic 4000 tokens, keeping the last 20 messages. Step 07 uses 100 tokens so you can watch it fire.
 
 ---
 
@@ -86,7 +86,7 @@ uv sync --active
 | Install / update deps after a pull | `uv sync --active` |
 | Add a package | `uv add --active langchain-anthropic` |
 | Remove a package | `uv remove --active langchain-anthropic` |
-| Run a script | `uv run --active agent.py` |
+| Run a script | `uv run --active main.py` |
 | List installed packages | `uv pip list` |
 | Leave the env | `deactivate` |
 
@@ -148,7 +148,7 @@ uv run --active agent_04.py   # 04 InMemorySaver
 uv run --active agent_05.py   # 05 SqliteSaver        (memory.db)
 uv run --active agent_06.py   # 06 PostgresSaver      (Postgres)
 uv run --active agent_07.py   # 07 summarization      (Postgres)
-uv run --active agent.py      # ★  Draftly baseline   (.env + Postgres)
+uv run --active main.py       # ★  Draftly app        (.env + Postgres)
 ```
 
 `python agent_00.py` works too while `.play` is active.
@@ -159,7 +159,8 @@ uv run --active agent.py      # ★  Draftly baseline   (.env + Postgres)
 |---|---|
 | 00, 01 | Ollama is running (`ollama list` shows the model) |
 | 02 → 05 | `.env` has `DRAFTLY_LLM_MODEL` and `DRAFTLY_API_KEY` |
-| 06, 07, ★ | Postgres is running and `.env` has `DRAFTLY_DB_URI` |
+| 06, 07 | Postgres is running and `.env` has `DRAFTLY_DB_URI` |
+| ★ | Postgres is running and `.env` has `PROVIDER`, `MODEL`, `API_KEY`, `DB_URI` |
 
 - **Single-turn scripts** (00, 01, 02): enter one email idea and get one draft.
 - **Chat scripts** (03 → 07, ★): keep refining the draft, e.g. *"make it more formal"*. Type `quit`, `exit` or `bye` to stop.
@@ -182,7 +183,8 @@ Draftly: Subject: Friday Off Request ...
 ```
 playground/
 ├── agent_00.py … agent_07.py   # learning steps, run in order
-├── agent.py                    # Draftly baseline: all concepts combined
+├── main.py                     # Draftly app: chat loop entry point
+├── app/                        # config, prompts, schemas, tools, middlewares, agent
 ├── memory.db                   # SQLite memory (created by agent_05.py)
 ├── pyproject.toml / uv.lock    # dependencies
 ├── .env                        # your keys (never commit)

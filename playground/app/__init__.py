@@ -1,1 +1,1 @@
-"""Draftly AI agent: settings, data, tools and the agent loop."""
+"""Draftly AI agent: config, prompts, schemas, tools, middleware and the agent loop."""
